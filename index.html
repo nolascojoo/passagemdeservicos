@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Passagem de Serviço</title>
+<style>
+:root{--bg:#060d14;--bg2:#0a1620;--card:#0e1b27;--card2:#122333;--ink:#e8f0f6;--mut:#7f95a7;--line:#1b2f40;--pri:#22b8e0;--pri2:#5fd3f0;--ok:#2ecc8f;--warn:#f2b632;--bad:#ef5b5b;--shadow:0 10px 30px rgba(0,0,0,.45);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 500px at 85% -10%,#0d3a52 0,transparent 60%),var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+header{padding:26px 20px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0b1d2b,transparent)}
+header h1{margin:0;font-size:21px;letter-spacing:.14em;font-weight:800;background:linear-gradient(90deg,#fff,var(--pri2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{margin:4px 0 0;color:var(--mut);font-size:13px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:20px;padding:18px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+h2{font-size:12px;margin:26px 2px 12px;color:var(--pri2);letter-spacing:.18em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+section:first-of-type h2{margin-top:6px}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.card h3{margin:0 0 12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+label{display:block;font-size:12px;color:var(--mut);font-weight:600;margin-bottom:5px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#07111a;color:var(--ink);font:inherit;color-scheme:dark;transition:border-color .15s,box-shadow .15s}
+input::placeholder,textarea::placeholder{color:#47606f}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--pri);box-shadow:0 0 0 3px #22b8e029}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.row{display:flex;gap:8px;margin-bottom:8px;align-items:center}.row input:first-child{flex:1}
+.x{border:0;background:none;color:#9a5a5a;font-size:22px;cursor:pointer;padding:0 6px;transition:color .15s}.x:hover{color:var(--bad)}
+.add{border:1px dashed #2a6f86;color:var(--pri2);background:#22b8e00d;border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:700;font-size:13px;transition:background .15s}.add:hover{background:#22b8e01f}
+.seg{display:flex;background:#07111a;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;background:none;color:var(--mut);padding:10px;border-radius:9px;cursor:pointer;font-weight:700;font-size:14px;transition:all .2s}
+.seg button.on{background:linear-gradient(120deg,#0e7fa0,var(--pri));color:#03121a;box-shadow:0 4px 14px #22b8e044}
+.total{background:linear-gradient(120deg,#0b3a50,#0e6785);border:1px solid #1f7d9c;border-radius:12px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-weight:700;font-size:13px}
+.total b{font-size:30px;color:var(--pri2);font-variant-numeric:tabular-nums}
+.ves{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;background:#08131c}
+.st{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.st button{border:1.5px solid var(--line);background:#0b1823;color:var(--mut);border-radius:12px;padding:10px 2px;cursor:pointer;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .2s}
+.st .ic{font-size:22px;display:block}
+.st button.on[data-s=ratificado]{border-color:var(--warn);background:#f2b6321c;color:var(--warn)}
+.st button.on[data-s=atracado]{border-color:var(--pri);background:#22b8e01c;color:var(--pri2)}
+.st button.on[data-s=pendente]{border-color:#ff9a5c;background:#ff9a5c1c;color:#ff9a5c}
+.on[data-s=pendente] .ic{animation:bob 1.6s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-4px) rotate(-8deg)}}
+.st button.on[data-s=fechado]{border-color:var(--ok);background:#2ecc8f1c;color:var(--ok)}
+.on[data-s=ratificado] .ic{animation:pulse 1.2s ease-in-out infinite}
+.on[data-s=atracado] .ic{animation:sway 2.4s ease-in-out infinite;transform-origin:50% 0}
+.on[data-s=fechado] .ic{animation:pop .6s ease both}
+@keyframes pulse{50%{transform:scale(1.3);filter:drop-shadow(0 0 8px #f2b632)}}
+@keyframes sway{50%{transform:rotate(18deg)}0%,100%{transform:rotate(-18deg)}}@keyframes pop{0%{transform:scale(.2)}70%{transform:scale(1.35)}}
+.chk{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.chk label{display:flex;align-items:center;gap:8px;margin:0;color:var(--ink);background:#0b1823;border:1px solid var(--line);padding:9px 13px;border-radius:10px;cursor:pointer}
+.chk input{width:auto;accent-color:var(--ok)}
+.sn{display:flex;gap:6px}.sn button{flex:1;border:1px solid var(--line);background:#0b1823;color:var(--mut);padding:9px;border-radius:9px;cursor:pointer;font-weight:700}
+.sn button.on.s{background:#2ecc8f26;color:var(--ok);border-color:var(--ok)}.sn button.on.n{background:#ef5b5b26;color:var(--bad);border-color:var(--bad)}
+.sub{font-size:11px;color:var(--mut);margin:12px 0 8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.mq{display:flex;align-items:center;gap:10px;margin-bottom:8px;background:#08131c;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.mq input{border:0;background:none;padding:6px;flex:1;min-width:0;font-weight:600}.mq input:focus{box-shadow:none}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--ok);box-shadow:0 0 10px var(--ok)}.dot.parada{background:var(--bad);box-shadow:0 0 10px var(--bad)}.dot.manut{background:var(--warn);box-shadow:0 0 10px var(--warn)}
+.mq .sn{flex:none}.mq .sn button{padding:6px 9px;font-size:12px}
+.stp{display:flex;flex:none;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#07111a}.stp button{border:0;background:#0f2434;color:var(--pri2);width:38px;font-size:20px;font-weight:700;cursor:pointer}.stp button:active{background:#17384f}.stp input{width:54px;border:0;border-radius:0;text-align:center;padding:10px 2px;-moz-appearance:textfield}.stp input::-webkit-inner-spin-button{display:none}textarea{resize:vertical;min-height:90px;line-height:1.5}.vh{display:grid;grid-template-columns:1fr 100px auto;gap:10px;align-items:end}.qa{margin-bottom:12px}.qa label{color:var(--ink);font-size:13px}
+input[type=date],input[type=time],input[type=datetime-local]{cursor:pointer;min-height:44px}
+::-webkit-calendar-picker-indicator{filter:invert(.8) sepia(1) saturate(4) hue-rotate(160deg);cursor:pointer;font-size:18px;opacity:.9}
+.hint{font-size:13px;color:var(--pri2);margin:-2px 0 10px}
+.sn button.on.m{background:#22b8e026;color:var(--pri2);border-color:var(--pri)}
+.pvi{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#08131c;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.pvi .t{font-size:14px}.pvi .k{font-size:10px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;display:block}
+.pvi .sn{width:210px}@media(max-width:560px){.pvi{grid-template-columns:1fr}.pvi .sn{width:100%}}
+.crow{background:#08131c;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px}.crow .r1{display:flex;gap:8px;align-items:center;margin-bottom:10px}.crow .r1:last-child{margin-bottom:0}.crow .r1 select{flex:1;min-width:0}.crow .r1>input{flex:1;min-width:0}
+.chps{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chp{font-size:12px;padding:3px 9px;border-radius:99px;background:#0f2434;border:1px solid var(--line);color:var(--ink)}.chp.w{color:var(--warn);border-color:#f2b63266;background:#f2b63214}.chp.g{color:var(--ok);border-color:#2ecc8f55;background:#2ecc8f12}.chp.o{color:#ff9a5c;border-color:#ff9a5c66;background:#ff9a5c14}.chp.b{color:var(--pri2);border-color:#22b8e055;background:#22b8e012}
+.hintsm{font-size:12px;color:var(--mut);margin-top:4px}.src{font-size:12px;color:var(--mut);border-left:2px solid var(--line);padding-left:8px;margin-top:8px;font-style:italic}
+.iss h3{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.iss .n{background:#ff9a5c;color:#1a0d02;border-radius:99px;padding:1px 9px;font-size:12px}.iss .ok{color:var(--ok);font-weight:700;font-size:14px}
+.iss .il{max-height:42vh;overflow:auto;padding-right:2px}.iss .gt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#ff9a5c;font-weight:700;margin:12px 0 2px}.iss .gt:first-child{margin-top:2px}
+.iss div.i::before{content:'•';color:#ff9a5c;margin-right:8px}.iss div.i{font-size:13px;padding:7px 10px;border-radius:9px;background:#08131c;border:1px solid var(--line);margin-top:6px;cursor:pointer;color:var(--ink)}.iss div.i:hover{border-color:#ff9a5c}
+.fab{display:none;position:fixed;left:0;right:0;bottom:0;z-index:20;gap:10px;align-items:center;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,transparent,#060d14 40%)}
+.badge{background:#ff9a5c;color:#1a0d02;border-radius:99px;padding:6px 12px;font-weight:800;font-size:13px}.badge:empty{display:none}.badge.ok{background:var(--ok);color:#03140c}
+@media(max-width:900px){.fab{display:flex}body{padding-bottom:90px}}
+.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}.mbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:440px;width:100%;max-height:80vh;overflow:auto}
+.wrap{display:block!important;max-width:760px}.prev{position:static}main section>h2{display:none}.fab{display:none!important}body{padding-bottom:100px}
+#stepper{position:sticky;top:0;z-index:15;display:flex;gap:4px;justify-content:center;padding:10px 12px;background:#060d14ee;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);overflow-x:auto}
+.st1{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#0b1823;color:var(--mut);border-radius:99px;padding:5px 12px 5px 5px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap}
+.st1 .b{width:24px;height:24px;border-radius:50%;background:#12293a;display:grid;place-items:center;font-size:12px}
+.st1.cur{border-color:var(--pri);color:var(--ink);background:#22b8e01a}.st1.cur .b{background:var(--pri);color:#03121a}
+.st1.done .b{background:var(--ok);color:#03140c}.st1.done{color:var(--ink)}.st1.lock{opacity:.45}
+@media(max-width:700px){.st1 .l{display:none}.st1.cur .l{display:inline}}
+.stephd{margin:2px 2px 14px}.stephd .t{font-size:20px;font-weight:800}.stephd .d{color:var(--mut);font-size:13px;margin-top:2px}.stephd .e{font-size:11px;letter-spacing:.14em;color:var(--pri2);text-transform:uppercase;font-weight:700}
+.wiz{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:10px;align-items:center;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,transparent,#060d14 38%)}
+.wiz .btn{flex:none;min-width:120px}.wmsg{flex:1;font-size:12px;color:#ff9a5c;text-align:center}.wiz .btn.lock{background:linear-gradient(120deg,#9a5a2a,#ff9a5c);color:#1a0d02}
+.shake{animation:shk .4s}@keyframes shk{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g2>*,.g3>*{min-width:0}
+input,select,textarea{font-size:16px}
+input[type=date],input[type=time],input[type=datetime-local]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;max-width:100%;min-height:46px;text-align:left}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+.sn button{min-height:44px}.stp button{height:46px}.stp input{height:46px}.add{min-height:44px}.btn{min-height:48px}
+.mq .x{order:2}
+.total{flex-wrap:wrap;gap:4px 12px}
+@media(max-width:560px){
+ header h1{font-size:17px;letter-spacing:.07em}header{padding:18px 16px 14px}
+ .wrap{padding:14px 12px}
+ .mq{flex-wrap:wrap}.mq input{flex:1 1 55%}.mq .sn{order:3;width:100%}.mq .sn button{flex:1;font-size:13px;padding:9px 4px}
+ .btns{flex-wrap:wrap}.btns .btn{flex:1 1 140px}
+ .wiz{gap:8px;padding-left:12px;padding-right:12px}.wiz .btn{min-width:0;padding:12px 14px;font-size:14px}.wmsg{font-size:11px;line-height:1.2}
+ .st button{font-size:11px;padding:8px 0}.st .ic{font-size:20px}
+ .vh{grid-template-columns:minmax(0,1fr) 84px auto}
+ .crow .r1{flex-wrap:wrap}.crow .r1 select{flex:1 1 100%}.crow .r1>input{flex:1 1 100%}
+ .crow .r1 .stp{margin-right:auto}
+ .chk label{padding:11px 14px}
+ .pvi .sn{width:100%}
+}
+@media(max-width:360px){.g3{grid-template-columns:1fr}.st{grid-template-columns:repeat(2,1fr)}.st1 .b{width:22px;height:22px}}
+.hide{display:none}
+.prev{position:sticky;top:12px;align-self:start}
+pre{white-space:pre-wrap;word-break:break-word;font:13px/1.6 ui-monospace,Consolas,monospace;background:#050b11;color:#cfe3ef;border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 12px;max-height:62vh;overflow:auto}
+.btns{display:flex;gap:8px}.btn{flex:1;border:0;border-radius:11px;padding:13px;font-weight:800;cursor:pointer;font-size:14px;background:linear-gradient(120deg,#0e7fa0,var(--pri));color:#03121a;transition:transform .1s}.btn:active{transform:scale(.98)}
+.btn.sec{background:#0b1823;color:var(--ink);border:1px solid var(--line)}
+</style></head><body>
+<header><h1>⚓ PASSAGEM DE SERVIÇO</h1><p>Preencha os campos — o texto padronizado é gerado automaticamente</p></header>
+<nav id="stepper"></nav>
+<div class="wrap">
+<main>
+<div id="steptitle" class="stephd"></div><div id="stepiss" class="card iss hide"></div>
+
+<section data-t="Geral">
+<div class="card"><h3>Passagem anterior</h3>
+<label>Cole aqui a última passagem gerada</label>
+<textarea id="prevtxt" rows="5" placeholder="Cole a passagem do turno anterior (ou use o botão abaixo)"></textarea>
+<div class="btns" style="margin-top:10px"><button class="btn sec" onclick="pasteClip()">📋 Colar da área de transferência</button><button class="btn" onclick="analisar()">Analisar</button></div>
+<div id="pvinfo" class="hint hide" style="margin-top:12px"></div>
+<div id="pvlist" style="margin-top:8px"></div>
+<button class="btn hide" id="pvapply" style="margin-top:6px;width:100%" onclick="aplicarPV()">Aplicar na passagem</button></div>
+<div class="card"><h3>Turno</h3>
+<div class="g2"><div><label>Data de início</label><input type="date" id="data"></div>
+<div><label>Turma</label><select id="turma"><option value="">Selecione</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div></div>
+<div class="seg" id="turno" style="margin-top:10px"><button data-v="diurno">☀️ Diurno</button><button data-v="noturno">🌙 Noturno</button></div>
+<div class="g2" style="margin-top:10px"><div><label>Início</label><input type="time" id="hi"></div><div><label>Fim</label><input type="time" id="hf"></div></div></div>
+<div class="card"><h3>Estoque de diesel</h3>
+<label>Foram recebidas carretas de diesel neste turno?</label>
+<div class="sn" id="dcs"><button class="s" onclick="setDc('sim')">Sim</button><button class="n" onclick="setDc('nao')">Não</button></div>
+<div id="dcbox" class="hide" style="margin-top:14px"><label>Quantas carretas?</label>
+<div class="stp" style="width:fit-content"><button onclick="stpD(-1)" aria-label="menos">−</button><input type="number" min="0" id="dcq" placeholder="0"><button onclick="stpD(1)" aria-label="mais">+</button></div></div>
+<div id="dhint" class="hint hide" style="margin-top:12px"></div>
+<div class="g2" style="margin-top:12px"><div><label>Volume (m³)</label><input id="dv" placeholder="254,919"></div><div><label>Peso (ton)</label><input id="dp" placeholder="212,697"></div></div></div>
+</section>
+
+<datalist id="empresas"><option value="Textil Nahas"><option value="Eurotextil"><option value="VCI"><option value="Alliance"><option value="Timbro"><option value="Comexport"><option value="Portmac"><option value="Allure"></datalist>
+<section data-t="Pátio">
+<div class="card"><h3>Blocos de granito recebidos</h3>
+<div class="g3"><div><label>Quanzhou</label><input type="number" min="0" id="qnzh" placeholder="0"></div><div><label>Hualien</label><input type="number" min="0" id="hua" placeholder="0"></div><div><label>MDC</label><input type="number" min="0" id="mdc" placeholder="0"></div></div>
+<div class="total"><span>Total geral recebido</span><b id="tot">0</b></div>
+<div style="margin-top:12px"><label>Total no pátio (blocos na área)</label><input type="number" min="0" id="patio" placeholder="0"></div></div>
+<div class="card"><h3>Containers enviados</h3><label>Foram enviados containers neste turno?</label><div class="sn" id="qenv"><button class="s" onclick="setQ('env','sim')">Sim</button><button class="n" onclick="setQ('env','nao')">Não</button></div>
+<div id="boxenv" class="hide" style="margin-top:12px"><div id="cenv"></div><button class="add" onclick="addC('env')">+ empresa</button></div></div>
+<div class="card"><h3>Containers recebidos</h3><label>Foram recebidos containers neste turno?</label><div class="sn" id="qrec"><button class="s" onclick="setQ('rec','sim')">Sim</button><button class="n" onclick="setQ('rec','nao')">Não</button></div>
+<div id="boxrec" class="hide" style="margin-top:12px"><div id="crec"></div><button class="add" onclick="addC('rec')">+ empresa</button></div></div>
+<div class="card"><h3>Containers para enviar no dia seguinte</h3>
+<label>Há containers para enviar amanhã?</label>
+<div class="sn" id="sai"><button class="s" onclick="setSai('sim')">Sim</button><button class="n" onclick="setSai('nao')">Não</button></div>
+<div id="saibox" class="hide" style="margin-top:14px"><label>Quantos?</label>
+<div class="stp" style="width:fit-content"><button onclick="stpS(-1)" aria-label="menos">−</button><input type="number" min="0" id="saiq" placeholder="0"><button onclick="stpS(1)" aria-label="mais">+</button></div>
+<label style="margin-top:14px">Já estão separados?</label>
+<div class="sn" id="sep"><button class="s" onclick="setSep('sim')">Sim</button><button class="n" onclick="setSep('nao')">Não</button></div></div></div>
+<div class="card"><h3>Outros serviços no pátio</h3><textarea id="tpat" rows="5" placeholder="Escreva um serviço por linha — o texto final formata sozinho"></textarea></div>
+</section>
+
+<section data-t="Píer">
+<div class="card"><h3>Serviços no píer</h3><textarea id="tpier" rows="5" placeholder="Escreva um serviço por linha — o texto final formata sozinho"></textarea></div>
+</section>
+
+<section data-t="Embarcações">
+<div class="card"><h3>Embarcações</h3><label>Há embarcações a informar? (ratificadas, atracadas, pendentes ou fechadas)</label><div class="sn" id="vq"><button class="s" onclick="setV('sim')">Sim</button><button class="n" onclick="setV('nao')">Não</button></div></div>
+<div id="vbox" class="hide"><div id="ves"></div><button class="add" onclick="addV()">+ embarcação</button></div>
+</section>
+
+<section data-t="Pendências e Máquinas">
+<div class="card"><h3>Pendências — Pátio</h3><textarea id="tppat" rows="4" placeholder="Escreva um serviço por linha — o texto final formata sozinho"></textarea></div>
+<div class="card"><h3>Pendências — Píer</h3><textarea id="tppier" rows="4" placeholder="Escreva um serviço por linha — o texto final formata sozinho"></textarea></div>
+<div class="card"><h3>Máquinas (já cadastradas — ajuste o status)</h3><div id="maq"></div><button class="add" onclick="addM()">+ máquina</button></div>
+</section>
+</main>
+
+<aside class="prev"><div class="card iss" id="iss"></div><div class="card"><h3>Texto gerado</h3><pre id="out"></pre>
+<div class="btns"><button class="btn" id="cp">Copiar texto</button><button class="btn sec" id="wa">WhatsApp</button></div>
+<div class="btns" style="margin-top:8px"><button class="btn sec" id="nx">Iniciar próximo turno</button><button class="btn sec" id="rs">Limpar tudo</button></div></div></aside>
+</div>
+<div class="modal hide" id="warn"><div class="mbox"><h3 style="color:#ff9a5c">Faltam informações (<span id="wn"></span>)</h3><p class="hintsm" style="margin:0 0 8px">Confira antes de enviar a passagem:</p><div id="wl" class="iss"></div><div class="btns" style="margin-top:14px"><button class="btn sec" id="wb">Voltar e preencher</button><button class="btn" id="wc">Copiar mesmo assim</button></div></div></div>
+<div class="wiz"><button class="btn sec" id="wback">← Voltar</button><div id="wmsg" class="wmsg"></div><button class="btn" id="wnext">Avançar →</button></div>
+<div class="fab"><button class="btn" id="cp2">Copiar passagem</button><span class="badge" id="badge"></span></div>
+<script>
+const $=id=>document.getElementById(id);
+const lc=t=>{t=String(t||'').trim();return /^[A-ZÀ-Ú][a-zà-ú]/.test(t)?t.charAt(0).toLowerCase()+t.slice(1):t};
+const cap=t=>{t=String(t||'').trim();return t.charAt(0).toUpperCase()+t.slice(1)};
+const dTxt=(d,h,leg)=>{if(!d&&leg){[d,h]=String(leg).split('T')}if(!d)return'';const[y,m,dd]=d.split('-');return `${dd}/${m}${h?' às '+h+'h':''}`};
+const C1=el=>{const v=el.value;if(v&&v[0]!==v[0].toUpperCase()){const p=el.selectionStart;el.value=v[0].toUpperCase()+v.slice(1);try{el.setSelectionRange(p,p)}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const blank=()=>({data:new Date().toISOString().slice(0,10),turma:'',envQ:'',recQ:'',vesQ:'',step:0,turno:'diurno',hi:'07:00',hf:'19:00',dv:'',dp:'',hua:'',qnzh:'',mdc:'',patio:'',sai:'',saiq:'',saisep:'',dc:'',dcq:'',dvp:null,dpp:null,patioPrev:null,patioManual:false,
+ env:[{e:'',q:''}],rec:[{e:'',q:''}],pat:'',pier:'',ppat:'',ppier:'',ves:[],maq:[{n:'EP 45-1',s:'operando'},{n:'EP 45-2',s:'operando'},{n:'EP 30-1',s:'operando'}]});
+let D=blank();try{const s=localStorage.getItem('ps');if(s)D=Object.assign(blank(),JSON.parse(s))}catch(e){}
+const mk=n=>String(n||'').toLowerCase().replace(/empilhadeira|\s+/g,'');
+if(!Array.isArray(D.maq))D.maq=[];D.maq.forEach(x=>{x.n=String(x.n||'').replace(/^empilhadeira\s+/i,'')});
+{const seen=new Set(),out=[];blank().maq.forEach(m=>{const f=D.maq.find(x=>mk(x.n)==mk(m.n));out.push(f?{n:m.n,s:f.s||'operando'}:m);seen.add(mk(m.n))});
+D.maq.forEach(x=>{const k=mk(x.n);if(k&&!seen.has(k)){seen.add(k);out.push(x)}});D.maq=out}
+const save=()=>{try{localStorage.setItem('ps',JSON.stringify(D))}catch(e){}};
+document.querySelectorAll('section').forEach(sec=>{const h=document.createElement('h2');h.textContent=sec.dataset.t;sec.prepend(h)});
+// campos simples
+['data','turma','hi','hf','dv','dp','hua','qnzh','mdc','patio'].forEach(k=>{const el=$(k);el.value=D[k];el.oninput=()=>{D[k]=el.value;gen()}});
+function setTurno(t,reset){D.turno=t;if(reset){D.hi=t=='diurno'?'07:00':'19:00';D.hf=t=='diurno'?'19:00':'07:00';$('hi').value=D.hi;$('hf').value=D.hf}
+ [...$('turno').children].forEach(b=>b.classList.toggle('on',b.dataset.v==t));gen()}
+[...$('turno').children].forEach(b=>b.onclick=()=>setTurno(b.dataset.v,true));
+// listas de texto
+['pat','pier','ppat','ppier'].forEach(k=>{const el=$('t'+k);if(Array.isArray(D[k]))D[k]=D[k].join('\n');el.value=D[k];el.oninput=()=>{D[k]=el.value;gen()}});
+// containers
+function addC(k){rc();const r=$('c'+k).querySelectorAll('.row'),l=r[r.length-1];if(l)l.querySelector('input').focus()}
+function stp(k,i,d){D[k][i].q=Math.max(0,(parseInt(D[k][i].q)||0)+d);rc()}
+const EMP=['VCI','Eurotextil','Textil Nahas','Alliance','Timbro','Comexport','Portmac','Allure'];
+function setE(k,i,v){const c=D[k][i];if(v=='__o'){c.o=true;c.e=''}else{c.o=false;c.e=v}rc()}
+function setT(i,v){D.rec[i].t=v;rc()}
+function rc(){['env','rec'].forEach(k=>{const l=D[k][D[k].length-1];if(!l||l.e.trim()||String(l.q).trim())D[k].push({e:'',q:'',t:'dtc',lib:'nao',proc:'Santos/SP'});
+ $('c'+k).innerHTML=D[k].map((c,i)=>{const oth=c.o||(c.e&&!EMP.includes(c.e)),t=c.t||'dtc';
+  return `<div class="crow"><div class="r1"><select onchange="setE('${k}',${i},this.value)"><option value="">Empresa…</option>${EMP.map(o=>`<option ${c.e==o?'selected':''}>${o}</option>`).join('')}<option value="__o" ${oth?'selected':''}>Outra…</option></select>
+${oth?`<input value="${esc(c.e)}" placeholder="Nome" autocapitalize="words" oninput="C1(this);D.${k}[${i}].e=this.value;gen()" onchange="rc()">`:''}
+<div class="stp"><button onclick="stp('${k}',${i},-1)" aria-label="menos">−</button><input type="number" min="0" value="${esc(c.q)}" placeholder="0" oninput="D.${k}[${i}].q=this.value;gen()" onchange="rc()"><button onclick="stp('${k}',${i},1)" aria-label="mais">+</button></div>
+<button class="x" onclick="D.${k}.splice(${i},1);rc()" title="Remover">×</button></div>
+${k=='rec'?`<div class="sn" style="max-width:220px"><button class="m ${t=='dtc'?'on':''}" onclick="setT(${i},'dtc')">DTC</button><button class="m ${t=='dta'?'on':''}" onclick="setT(${i},'dta')">DTA</button></div>
+${t=='dta'?`<div class="g2" style="margin-top:10px"><div><label>Liberado pelo fiscal?</label><div class="sn"><button class="s ${c.lib=='sim'?'on':''}" onclick="D.rec[${i}].lib='sim';rc()">Sim</button><button class="n ${c.lib!='sim'?'on':''}" onclick="D.rec[${i}].lib='nao';rc()">Não</button></div></div><div><label>Procedência</label><input value="${esc(c.proc==null?'Santos/SP':c.proc)}" oninput="D.rec[${i}].proc=this.value;gen()"></div></div>`:''}`:''}</div>`}).join('')});gen()}
+// máquinas
+function addM(){D.maq.push({n:'',s:'operando'});rm()}
+const MS=[['operando','Operando',''],['parada','Parada','parada'],['em manutenção','Manut.','manut']];
+function rm(){$('maq').innerHTML=D.maq.map((m,i)=>`<div class="mq"><span class="dot ${(MS.find(o=>o[0]==m.s)||MS[0])[2]}"></span><input value="${esc(m.n)}" placeholder="Máquina" oninput="D.maq[${i}].n=this.value;gen()"><div class="sn">${MS.map(o=>`<button class="${m.s==o[0]?'on s':''}" onclick="D.maq[${i}].s='${o[0]}';rm()">${o[1]}</button>`).join('')}</div><button class="x" onclick="D.maq.splice(${i},1);rm()">×</button></div>`).join('');gen()}
+// embarcações
+const ST=[['ratificado','🟡','Ratificado'],['atracado','⚓','Atracado'],['pendente','📝','Pendente'],['fechado','✅','Fechado']];
+function addV(){D.vesQ='sim';D.ves.push({n:'',v:'',s:'ratificado',prev:'',hora:'',bwe:'',ran:'',des:'',pd:'',ph:'',desd:'',desh:'',dhora:'',pend:'',psp:false,sara:false,fpsp:false,fsara:false});rv()}
+const sn=(i,f,v)=>`<div class="sn"><button class="s ${v==='sim'?'on':''}" onclick="D.ves[${i}].${f}='sim';rv()">Sim</button><button class="n ${v==='nao'?'on':''}" onclick="D.ves[${i}].${f}='nao';rv()">Não</button></div>`;
+function vqUpdate(){[...$('vq').children].forEach(b=>b.classList.toggle('on',(b.classList.contains('s')?'sim':'nao')==D.vesQ));$('vbox').classList.toggle('hide',D.vesQ!=='sim')}
+function setV(v){if(v=='nao'&&D.ves.length&&!confirm('Remover as embarcações já lançadas?'))return;D.vesQ=v;if(v=='nao')D.ves=[];if(v=='sim'&&!D.ves.length)addV();else rv()}
+function setQ(k,v){D[k+'Q']=v;rq()}
+function rq(){['env','rec'].forEach(k=>{[...$('q'+k).children].forEach(b=>b.classList.toggle('on',(b.classList.contains('s')?'sim':'nao')==D[k+'Q']));$('box'+k).classList.toggle('hide',D[k+'Q']!=='sim')});gen()}
+function rv(){vqUpdate();$('ves').innerHTML=D.ves.map((x,i)=>`<div class="ves"><div class="vh"><div><label>Embarcação</label><input value="${esc(x.n)}" placeholder="Nome da embarcação" autocapitalize="words" oninput="C1(this);D.ves[${i}].n=this.value;gen()"></div><div><label>Viagem</label><input value="${esc(x.v)}" placeholder="Nº" oninput="D.ves[${i}].v=this.value;gen()"></div><button class="x" onclick="D.ves.splice(${i},1);rv()" title="Remover">×</button></div>
+<div class="st">${ST.map(s=>`<button data-s="${s[0]}" class="${x.s==s[0]?'on':''}" onclick="D.ves[${i}].s='${s[0]}';rv()"><span class="ic">${s[1]}</span>${s[2]}</button>`).join('')}</div>
+${x.s=='ratificado'?`<label>Previsão de atracação</label><div class="g2"><input type="date" value="${esc(x.pd||(x.prev||'').split('T')[0]||'')}" onchange="D.ves[${i}].pd=this.value;gen()"><input type="time" value="${esc(x.ph||(x.prev||'').split('T')[1]||'')}" onchange="D.ves[${i}].ph=this.value;gen()"></div><div class="hintsm">A hora é opcional.</div>`:''}
+${x.s=='atracado'?`<label>Horário de atracação</label><input type="time" value="${esc(x.hora)}" onchange="D.ves[${i}].hora=this.value;gen()">
+<div class="sub">Serviços executados?</div><div class="qa"><label>Embarque de materiais BWE</label>${sn(i,'bwe',x.bwe)}</div><div class="qa"><label>Embarque de rancho</label>${sn(i,'ran',x.ran)}</div>
+<div style="margin-top:10px"><label>Previsão de desatracação</label><div class="g2"><input type="date" value="${esc(x.desd||(x.des||'').split('T')[0]||'')}" onchange="D.ves[${i}].desd=this.value;gen()"><input type="time" value="${esc(x.desh||(x.des||'').split('T')[1]||'')}" onchange="D.ves[${i}].desh=this.value;gen()"></div></div>
+<div class="sub">Pendências (inclui documentação)</div><textarea rows="2" oninput="D.ves[${i}].pend=this.value;gen()">${esc(x.pend)}</textarea><div class="sub">Falta fechar</div><div class="chk"><label><input type="checkbox" ${x.fpsp?'checked':''} onchange="D.ves[${i}].fpsp=this.checked;gen()"> PSP</label><label><input type="checkbox" ${x.fsara?'checked':''} onchange="D.ves[${i}].fsara=this.checked;gen()"> SARA</label></div>`:''}
+${x.s=='pendente'?`<label>Desatracou às</label><input type="time" value="${esc(x.dhora||'')}" onchange="D.ves[${i}].dhora=this.value;gen()"><div class="sub">Falta fechar</div><div class="chk"><label><input type="checkbox" ${x.fpsp?'checked':''} onchange="D.ves[${i}].fpsp=this.checked;gen()"> PSP</label><label><input type="checkbox" ${x.fsara?'checked':''} onchange="D.ves[${i}].fsara=this.checked;gen()"> SARA</label></div><div class="sub">Pendências (inclui documentação)</div><textarea rows="2" oninput="D.ves[${i}].pend=this.value;gen()">${esc(x.pend)}</textarea>`:''}
+${x.s=='fechado'?`<div class="sub">Fechado em:</div><div class="chk"><label><input type="checkbox" ${x.psp?'checked':''} onchange="D.ves[${i}].psp=this.checked;gen()"> PSP</label><label><input type="checkbox" ${x.sara?'checked':''} onchange="D.ves[${i}].sara=this.checked;gen()"> SARA</label></div>`:''}
+</div>`).join('');gen()}
+// passagem anterior
+let PV=[];
+async function pasteClip(){try{$('prevtxt').value=await navigator.clipboard.readText();analisar()}catch(e){$('prevtxt').focus()}}
+const clean=t=>String(t).trim().replace(/^[*\-•]\s*/,'').replace(/[;.\s]+$/,'').trim();
+const nz=t=>String(t).toLowerCase().replace(/[^a-z0-9à-ú]/g,'');
+const NEG=/\b(falta|faltam|faltando|pendente|pendentes|aguardando|ainda\s+n[ãa]o|n[ãa]o|sem)\b/i;
+const POS=/(embarcad|realizad|conclu|finaliz|feito|efetuad|\bsim\b|\bok\b)/i;
+const flag=c=>NEG.test(c)?'nao':POS.test(c)?'sim':'';
+function parseVes(t){
+ const m=t.match(/^\W*(.+?)[,\s]+viagem\s*(?:n[º°o.]*\s*)?([\w\-\/]+)/i);if(!m)return null;
+ const v={n:cap(clean(m[1]).replace(/^(navio|embarca[çc][ãa]o)\s+/i,'')),v:m[2].replace(/[,;.]+$/,''),s:'',prev:'',prevTxt:'',hora:'',bwe:'',ran:'',des:'',pd:'',ph:'',desd:'',desh:'',dhora:'',pend:'',psp:false,sara:false,fpsp:false,fsara:false};
+ const yr=(D.data||'').slice(0,4)||String(new Date().getFullYear());
+ const dt=re=>{const x=t.match(re);if(!x)return null;const y=x[3]?(x[3].length==2?'20'+x[3]:x[3]):yr;const h=x[4]?`${p2(x[4])}:${x[5]||'00'}`:'';
+  return{d:`${y}-${p2(x[2])}-${p2(x[1])}`,h,txt:`${p2(x[1])}/${p2(x[2])}${h?' às '+h+'h':''}`}};
+ const tail='(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?(?:[^0-9]{0,12}(\\d{1,2})\\s*[:h]\\s*(\\d{2})?)?';
+ const pv=dt(new RegExp('previs[ãa]o(?!\\s+de\\s+desatrac)[^0-9]{0,30}'+tail,'i'));if(pv){v.prevTxt=pv.txt;v.pd=pv.d;v.ph=pv.h}
+ const ds=dt(new RegExp('desatrac\\w*[^0-9]{0,30}'+tail,'i'));if(ds){v.desd=ds.d;v.desh=ds.h}
+ const hm=t.match(/(?<!des)atrac(?:ad[oa]|ou)[^0-9]{0,15}(\d{1,2})\s*[:h]\s*(\d{2})?/i);if(hm)v.hora=`${p2(hm[1])}:${hm[2]||'00'}`;
+ const atr=/(?<!des)atrac(?:ad[oa]|ou)/i.test(t);
+ const dp=/(?<!previs[ãa]o de )desatrac(?:ad[oa]|ou)/i.test(t);
+ if(dp){v.desd='';v.desh='';const m2=t.match(/desatrac(?:ad[oa]|ou)[^0-9]{0,15}(\d{1,2})\s*[:h]\s*(\d{2})?/i);if(m2)v.dhora=`${p2(m2[1])}:${m2[2]||'00'}`;else if(ds&&ds.h)v.dhora=ds.h}
+ let ctx='';const left=[];
+ t.split(/[;.,]/).map(x=>x.trim()).filter(Boolean).forEach(c=>{const l=c.toLowerCase();
+  if(l.includes(v.n.toLowerCase())||/viagem/.test(l)||/^(às|ás|as|em|dia|para)?\s*[\d\/:h\s]+$/i.test(l)){ctx='';return}
+  if(/bwe/.test(l)){v.bwe=flag(c)||v.bwe;ctx='';return}
+  if(/rancho/.test(l)){v.ran=flag(c)||v.ran;ctx='';return}
+  if(/psp|sara|fecha/.test(l)){
+   if(NEG.test(c))ctx='pend';else if(/fechad|fechou|fecharam/.test(l))ctx='closed';
+   const P=/psp/.test(l),S=/sara/.test(l);
+   if(!P&&!S){if(ctx=='pend')left.push(c);return}
+   const set=nm=>{if(ctx=='pend')v['f'+nm]=true;else if(ctx=='closed')v[nm]=true};
+   if(P)set('psp');if(S)set('sara');return}
+  if(/atrac|previs|ratific/.test(l)){ctx='';return}
+  ctx='';left.push(c)});
+ v.pend=cap(left.join('; '));
+ v.s=dp?((v.psp&&v.sara&&!v.fpsp&&!v.fsara&&!v.pend)?'fechado':'pendente'):(atr||v.fpsp||v.fsara)?'atracado':/ratificad/i.test(t)?'ratificado':(/fechad/i.test(t)&&(v.psp||v.sara))?'fechado':v.hora?'atracado':'ratificado';
+ return v}
+function analisar(){
+ const txt=$('prevtxt').value.replace(/porto\s+sem\s+papel/gi,'PSP');if(!txt.trim())return;
+ const info=[];PV=[];let sec='',sub='';
+ const hd=/^\*?\s*(SERVIÇOS PENDENTES|SERVIÇOS|ESTOQUE DE DIESEL|PÁTIO|PATIO|PIER|PÍER|MÁQUINAS|MAQUINAS)\s*[.:]?\s*\*?$/i;
+ const rows=[];
+ txt.split('\n').map(x=>x.trim()).filter(Boolean).forEach(ln=>{const m=ln.match(hd);
+  if(m){const h=m[1].toUpperCase();if(h=='SERVIÇOS PENDENTES'){sec='pend';sub=''}else if(h=='SERVIÇOS'){sec='serv';sub=''}
+   else if(h.startsWith('ESTOQUE')){sub='diesel'}else if(h.startsWith('M')){sub='maq'}else if(h.startsWith('P')&&h.includes('T')){sub='pat'}else{sub='pier'}return}
+  if(/^\*?\s*(PASSAGEM DE SERVI|TURMA)/i.test(ln)||/\d{2}\/\d{2}\/\d{4}\s*\d{2}:\d{2}/.test(ln))return;
+  rows.push({ln,sec,sub})});
+ const bul=/^([*\-•]|\d+[.)])\s*\S/,hasB={};
+ rows.forEach(r=>{if(bul.test(r.ln))hasB[r.sec+'/'+r.sub]=true});
+ const items=[],mq=[];let cur=null;
+ rows.forEach(r=>{if(r.sub=='maq'){mq.push(r.ln);return}if(r.sub=='diesel'||!r.sub)return;
+  const key=r.sec+'/'+r.sub,isB=bul.test(r.ln);
+  const cont=cur&&cur.key==key&&(hasB[key]?!isB:(/^[a-zà-ú]/.test(r.ln)||/^(falta|faltando|pend|aguard|ainda|e\s|ou\s|n[ãa]o|por[ée]m)/i.test(r.ln)));
+  if(cont)cur.t+=' '+r.ln;else{cur={key,sec:r.sec,sub:r.sub,t:r.ln};items.push(cur)}});
+ const VES=new Map(),rank={ratificado:1,atracado:2,pendente:3,fechado:4},other=[];
+ items.forEach(it=>{const t=clean(it.t);if(!t)return;
+  const v=it.sub=='pier'?parseVes(t):null;
+  if(v){const k=nz(v.n)+'|'+nz(v.v),o=VES.get(k);
+   if(!o){v.srcs=[t];VES.set(k,v)}else{o.srcs.push(t);['pd','ph','prevTxt','hora','dhora','bwe','ran','desd','desh','pend'].forEach(f=>{if(!o[f]&&v[f])o[f]=v[f]});
+    ['psp','sara','fpsp','fsara'].forEach(f=>{o[f]=o[f]||v[f]});if(rank[v.s]>rank[o.s])o.s=v.s;if((o.fpsp||o.fsara)&&rank[o.s]<2)o.s='atracado'}return}
+  if(it.sec=='pend'){if(!/^sem pend/i.test(t))other.push({kind:'item',src:'pend',k:it.sub,t,a:'manter',opts:['manter','concluido']});return}
+  if(/^(foram|foi)\s+(enviad|recebid)/i.test(t)||/totalizando/i.test(t))return;
+  const sai=/ir[ãa]o sair/i.test(t);
+  other.push({kind:'item',src:'serv',k:it.sub,t,a:/(manuten|aguard|continu|pendente|estamos|em andamento)/i.test(t)?'manter':'ignorar',opts:['manter','concluido','ignorar'],hint:sai?'Pode ter saído neste turno — confira os containers enviados.':''})});
+ VES.forEach(v=>PV.push(Object.assign(v,{kind:'ves',a:v.s=='fechado'?'concluido':'manter'})));
+ PV.push(...other);
+ const h=txt.match(/(\d{2})\/(\d{2})\/(\d{4})\s*(\d{2}):(\d{2})\s*h?\s*às\s*(\d{2}):(\d{2})/i);
+ if(h){const noite=parseInt(h[4])<12;const dt=new Date(`${h[3]}-${h[2]}-${h[1]}T12:00:00`);if(!noite)dt.setDate(dt.getDate()+1);
+  D.data=`${dt.getFullYear()}-${p2(dt.getMonth()+1)}-${p2(dt.getDate())}`;$('data').value=D.data;
+  setTurno(noite?'noturno':'diurno',true);info.push(`Turno: ${noite?'noturno':'diurno'}, ${fd(D.data)}`)}
+ const tp=txt.match(/totalizando\s+(?:na\s+área|no\s+pátio)[:\s]*(\d+)/i);
+ if(tp){D.patioPrev=parseInt(tp[1]);D.patioManual=false;info.push(`Pátio anterior: ${tp[1]} blocos (soma automática com os recebidos)`)}
+ const dv=txt.match(/Volume:\s*([\d.,]+)/i),dp=txt.match(/Peso:\s*([\d.,]+)/i);
+ if(dv||dp){if(dv){D.dv=dv[1];$('dv').value=D.dv}if(dp){D.dp=dp[1];$('dp').value=D.dp}D.dvp=D.dv;D.dpp=D.dp;D.dc='nao';rd();info.push('Diesel repetido')}
+ let nm=0;mq.forEach(l=>{const t=clean(l),m=t.match(/^(.*?)\s+(operando|parad[ao]|(?:em\s+)?manuten[çc][ãa]o)$/i);if(!m)return;
+  const st=/^oper/i.test(m[2])?'operando':/^parad/i.test(m[2])?'parada':'em manutenção';const f=D.maq.find(x=>mk(x.n)==mk(m[1]));
+  if(f)f.s=st;else D.maq.push({n:m[1].replace(/^empilhadeira\s+/i,''),s:st});nm++});
+ if(nm){rm();info.push(`${nm} máquinas atualizadas`)}
+ if(VES.size)info.push(`${VES.size} embarcação(ões) identificada(s)`);
+ $('pvinfo').textContent=info.join(' · ')||'Nenhuma informação reconhecida.';$('pvinfo').classList.remove('hide');
+ renderPV();gen()}
+const SL={ratificado:'Ratificado',atracado:'Atracado',pendente:'Pendente (desatracado)',fechado:'Fechado'};
+const chp=(l,c)=>`<span class="chp ${c||''}">${esc(l)}</span>`;
+const fdh=s=>{if(!s)return'';const[d,t]=s.split('T');return`${d.split('-').reverse().slice(0,2).join('/')} às ${t}h`};
+function renderPV(){
+ const OL={manter:['Manter','m'],concluido:['Concluído','s'],ignorar:['Ignorar','n']};
+ const btn=(i,x,o)=>`<button class="${OL[o][1]} ${x.a==o?'on':''}" onclick="PV[${i}].a='${o}';renderPV()">${OL[o][0]}</button>`;
+ $('pvlist').innerHTML=PV.length?'<div class="sub">O que o app entendeu da passagem anterior</div>'+PV.map((x,i)=>{
+  if(x.kind=='ves'){const c=[chp(SL[x.s],x.s=='fechado'?'g':x.s=='atracado'?'b':x.s=='pendente'?'o':'w')];
+   if(x.hora)c.push(chp('Atracou '+x.hora+'h'));if(x.dhora)c.push(chp('Desatracou '+x.dhora+'h'));if(x.prevTxt)c.push(chp('Previsão '+x.prevTxt+(x.ph?'':' (sem hora)')));
+   if(x.bwe)c.push(chp('BWE: '+(x.bwe=='sim'?'feito':'pendente'),x.bwe=='sim'?'g':'w'));if(x.ran)c.push(chp('Rancho: '+(x.ran=='sim'?'feito':'pendente'),x.ran=='sim'?'g':'w'));
+   {const dd=dTxt(x.desd,x.desh,x.des);if(dd)c.push(chp('Desatracação '+dd))}if(x.psp||x.sara)c.push(chp('Fechado: '+[x.psp&&'PSP',x.sara&&'SARA'].filter(Boolean).join(' e '),'g'));
+   if(x.fpsp||x.fsara)c.push(chp('Falta fechar: '+[x.fpsp&&'PSP',x.fsara&&'SARA'].filter(Boolean).join(' e '),'w'));if(x.pend)c.push(chp(x.pend,'w'));
+   const cs=x.s=='ratificado'?'vira Atracado (informe a hora)':'vira Fechado';
+   return `<div class="pvi"><div class="t"><span class="k">Embarcação · Píer</span><b>${esc(x.n)}${x.v?' · viagem '+esc(x.v):''}</b><div class="chps">${c.join('')}</div><div class="hintsm">Manter: cartão já preenchido · Concluído: ${cs}</div><div class="src">${x.srcs.map(esc).join('<br>')}</div></div><div class="sn">${btn(i,x,'manter')}${btn(i,x,'concluido')}</div></div>`}
+  return `<div class="pvi"><div class="t"><span class="k">${x.src=='pend'?'Pendente':'Serviço'} · ${x.k=='pat'?'Pátio':'Píer'}</span>${esc(x.t)}${x.hint?`<div class="hintsm">${esc(x.hint)}</div>`:''}</div><div class="sn">${x.opts.map(o=>btn(i,x,o)).join('')}</div></div>`}).join(''):'';
+ $('pvapply').classList.toggle('hide',!PV.length)}
+function addLine(k,t){const el=$('t'+k);const ls=String(D[k]||'').split('\n').filter(x=>x.trim());
+ if(!ls.some(x=>nz(clean(x))==nz(t)))ls.push(t);D[k]=ls.join('\n');el.value=D[k]}
+function aplicarPV(){let kept=0,done=0;
+ PV.forEach(x=>{
+  if(x.kind=='ves'){const c=x.a=='concluido',r=x.s=='ratificado';let s=x.s,psp=x.psp,sara=x.sara,fp=x.fpsp,fs=x.fsara;
+   if(c){if(r)s='atracado';else{s='fechado';psp=psp||fp;sara=sara||fs;fp=fs=false}}
+   const card={n:x.n,v:x.v,s,prev:'',pd:c&&r?'':x.pd,ph:c&&r?'':x.ph,hora:c&&r?'':x.hora,bwe:c&&r?'':x.bwe,ran:c&&r?'':x.ran,des:'',desd:c&&r?'':x.desd,desh:c&&r?'':x.desh,pend:x.pend,dhora:x.dhora||'',psp,sara,fpsp:fp,fsara:fs};
+   const f=D.ves.findIndex(z=>nz(z.n)==nz(x.n)&&nz(z.v)==nz(x.v));D.vesQ='sim';if(f>=0)D.ves[f]=card;else D.ves.push(card);c?done++:kept++;return}
+  if(x.a=='ignorar')return;
+  if(x.a=='concluido'){addLine(x.k,'Concluído: '+clean(x.t));done++;return}
+  addLine(x.src=='pend'?'p'+x.k:x.k,cap(clean(x.t)));kept++});
+ rv();PV=[];renderPV();$('pvinfo').textContent=`Aplicado: ${kept} mantidos, ${done} concluídos. Complete os demais campos do turno.`;gen()}
+// diesel
+function setDc(v){D.dc=v;if(v=='nao'&&D.dvp!=null){D.dv=D.dvp;D.dp=D.dpp;$('dv').value=D.dv;$('dp').value=D.dp}rd()}
+function stpD(d){D.dcq=Math.max(0,(parseInt(D.dcq)||0)+d);rd()}
+function rd(){[...$('dcs').children].forEach(b=>b.classList.toggle('on',(b.classList.contains('s')?'sim':'nao')==D.dc));
+ $('dcbox').classList.toggle('hide',D.dc!=='sim');$('dcq').value=D.dcq;
+ const h=$('dhint');h.classList.toggle('hide',!D.dc);h.textContent=D.dc=='sim'?'Informe o novo volume e peso após o recebimento.':(D.dvp!=null?'Repetido da passagem anterior.':'Informe o volume e o peso atuais.');gen()}
+$('dcq').oninput=()=>{D.dcq=$('dcq').value;gen()};
+// envio no dia seguinte
+function setSai(v){D.sai=v;rs()}function setSep(v){D.saisep=v;rs()}
+function stpS(d){D.saiq=Math.max(0,(parseInt(D.saiq)||0)+d);rs()}
+function rs(){const on=(id,v)=>[...$(id).children].forEach(b=>b.classList.toggle('on',b.classList.contains(v=='sim'?'s':'n')&&!!v));
+ on('sai',D.sai);on('sep',D.saisep);$('saibox').classList.toggle('hide',D.sai!=='sim');$('saiq').value=D.saiq;gen()}
+$('saiq').oninput=()=>{D.saiq=$('saiq').value;gen()};
+// texto
+const p2=n=>String(n).padStart(2,'0');
+const fd=d=>d?d.split('-').reverse().join('/'):'__/__/____';
+const fp=s=>{if(!s)return'data a definir';const[d,t]=s.split('T');const[y,m,dd]=d.split('-');return `${dd}/${m} às ${t}h`};
+function gen(){save();
+ const n=v=>parseInt(v)||0,tot=n(D.hua)+n(D.qnzh)+n(D.mdc);$('tot').textContent=tot;if(D.patioPrev!=null&&!D.patioManual){D.patio=String(D.patioPrev+tot);const pe=$('patio');if(pe&&pe.value!==D.patio)pe.value=D.patio}
+ const L=[];const cap=t=>{t=String(t||'').trim();return t.charAt(0).toUpperCase()+t.slice(1)};
+ const VN=D.ves.filter(x=>(x.n||'').trim().length>2).map(x=>[nz(x.n),nz(x.v||'')]);
+ const B=a=>String(a||'').split('\n').map(s=>s.trim().replace(/^[*\-•]\s*/,'')).filter(Boolean).map(s=>'*'+cap(s)).filter(l=>!VN.some(([a1,v1])=>nz(l).includes(a1)&&(!v1||nz(l).includes(v1))));
+ L.push('*PASSAGEM DE SERVIÇO*',`${fd(D.data)} ${D.hi}h às ${D.hf}h.`,`Turma ${D.turma}.`,'','*SERVIÇOS:*','*PÁTIO.*');
+ const nm=c=>cap(c.e),jn=a=>a.length>1?a.slice(0,-1).join(', ')+' e '+a[a.length-1]:a[0];
+ const ENV=D.envQ=='sim'?D.env:[],REC=D.recQ=='sim'?D.rec:[];
+ const grp=(arr,v1,vn)=>{const a=arr.filter(c=>c.e.trim()&&n(c.q)>0);if(!a.length)return;const tot=a.reduce((t,c)=>t+n(c.q),0);
+  L.push(`*${tot>1?vn:v1} ${jn(a.map((c,i)=>`${n(c.q)} ${i==0?(tot>1?'containers':'container')+' ':''}${nm(c)}`))}.`)};
+ grp(ENV,'Foi enviado','Foram enviados');
+ grp(REC.filter(c=>(c.t||'dtc')=='dtc'),'Foi recebido','Foram recebidos');
+ REC.filter(c=>c.t=='dta'&&c.e.trim()&&n(c.q)>0).forEach(c=>{const q=n(c.q),pr=(c.proc==null?'Santos/SP':c.proc).trim();
+  if(c.lib=='sim')L.push(q==1?`*Recebido e descarregado uma DTA da ${nm(c)}.`:`*Recebidas e descarregadas ${q} DTAs da ${nm(c)}.`);
+  else L.push(`*${q==1?'Recebido um container':'Recebidos '+q+' containers'} da ${nm(c)}${pr?' com procedência de '+pr:''}. Aguardando liberação fiscal pra descarregar.`)});
+ if(tot){const pc=[[n(D.mdc),'MDC'],[n(D.qnzh),'Quanzhou'],[n(D.hua),'Hualien']].filter(x=>x[0]>0).map(x=>`${x[0]} ${x[1]}`);
+  const lst=pc.length>1?pc.slice(0,-1).join(', ')+' e '+pc[pc.length-1]:pc[0];
+  L.push(`*Foram recebidos durante o turno ${tot} blocos, sendo: ${lst}${n(D.patio)>0?`, totalizando no pátio: ${n(D.patio)} blocos`:''}.`)}
+
+ if(D.sai=='sim'&&n(D.saiq)>0){let f='';if(D.data){const dt=new Date(D.data+'T12:00:00');dt.setDate(dt.getDate()+1);f=`${p2(dt.getDate())}/${p2(dt.getMonth()+1)}/${String(dt.getFullYear()).slice(2)}`}
+  const st=D.saisep=='sim'?'estão separados':D.saisep=='nao'?'ainda não estão separados':'';
+  L.push(`*Os ${p2(n(D.saiq))} containers que irão sair${f?' no dia '+f:''}${st?' '+st:''}.`)}
+ L.push(...B(D.pat),'','*PÍER:*');
+ const vn=x=>`${cap(x.n)||'Embarcação'}${x.v?' viagem '+x.v:''}`,yn=v=>v=='sim'?'sim':v=='nao'?'não':'—';
+ D.ves.filter(x=>x.s=='fechado').forEach(x=>{const w=[x.psp&&'PSP',x.sara&&'SARA'].filter(Boolean).map(z=>'no '+z).join(' e ');L.push(`*${vn(x)} fechado${w?' '+w:''}.`)});
+ L.push(...B(D.pier),'');
+ if(D.dv||D.dp||(D.dc=='sim'&&n(D.dcq)>0)){L.push('*ESTOQUE DE DIESEL*');if(D.dc=='sim'&&n(D.dcq)>0)L.push(n(D.dcq)==1?'Recebida 1 carreta de diesel.':`Recebidas ${n(D.dcq)} carretas de diesel.`);L.push(`Volume: ${D.dv} m³`,`Peso: ${D.dp} ton`,'')}
+ L.push('*SERVIÇOS PENDENTES:*','*PÁTIO*',...(B(D.ppat).length?B(D.ppat):['*Sem pendências.']),'','*PÍER.*');const pidx=L.length;L.push(...B(D.ppier));
+ D.ves.filter(x=>x.s=='ratificado').forEach(x=>L.push(`*${vn(x)}, ${x.s}, com previsão para ${dTxt(x.pd,x.ph,x.prev)||'data a definir'}.`));
+ D.ves.filter(x=>x.s=='atracado').forEach(x=>{const pt=[`atracado${x.hora?' às '+x.hora+'h':''}`],f=[x.fpsp&&'PSP',x.fsara&&'SARA'].filter(Boolean).join(' e ');
+  if(x.bwe)pt.push(`embarque de materiais BWE: ${x.bwe=='sim'?'sim':'não'}`);if(x.ran)pt.push(`embarque de rancho: ${x.ran=='sim'?'sim':'não'}`);
+  {const dd=dTxt(x.desd,x.desh,x.des);if(dd)pt.push(`previsão de desatracação ${dd}`)}if(f)pt.push(`falta fechar no ${f}`);if(x.pend.trim())pt.push(lc(x.pend));
+  L.push(`*${vn(x)}, ${pt.join('; ')}.`)});
+ D.ves.filter(x=>x.s=='pendente').forEach(x=>{const f=[x.fpsp&&'PSP',x.fsara&&'SARA'].filter(Boolean).join(' e '),pt=[`desatracado${x.dhora?' às '+x.dhora+'h':''}`];if(f)pt.push(`falta fechar no ${f}`);if(x.pend.trim())pt.push(lc(x.pend));L.push(`*${vn(x)}, ${pt.join('; ')}.`)});
+ if(L.length==pidx)L.push('*Sem pendências.');
+ const mq=D.maq.filter(m=>m.n.trim());if(mq.length){L.push('','*MÁQUINAS:*',...mq.map(m=>`-${/^ep\s*\d/i.test(m.n.trim())?'Empilhadeira '+m.n.trim().toUpperCase():cap(m.n)} ${m.s};`))}
+ const seen=new Set(),O=L.filter(l=>{if(!(l.startsWith('*')&&!l.endsWith('*'))||/^\*sem pend/i.test(l))return true;const k=nz(l);if(seen.has(k))return false;seen.add(k);return true});
+ $('out').textContent=O.join('\n');iss()}
+async function copiar(force){if(ISS.length&&force!==true){avisar(()=>copiar(true));return}
+ const t=$('out').textContent;try{await navigator.clipboard.writeText(t)}catch(e){const r=document.createRange();r.selectNode($('out'));getSelection().removeAllRanges();getSelection().addRange(r);document.execCommand('copy')}
+ [['cp','Copiar texto'],['cp2','Copiar passagem']].forEach(([id,l])=>{const b=$(id);b.textContent='Copiado ✓';setTimeout(()=>b.textContent=l,1500)})}
+let WCB=null;
+function avisar(cb){WCB=cb;$('wl').innerHTML=grp(ISS,'closeW();');$('wn').textContent=ISS.length;$('warn').classList.remove('hide')}
+function closeW(){$('warn').classList.add('hide')}
+$('wb').onclick=()=>{closeW();if(ISS[0])goTo(ISS[0][1])};$('wc').onclick=()=>{closeW();if(WCB)WCB()};
+$('cp').onclick=()=>copiar();$('cp2').onclick=()=>copiar();
+function goTo(id){const e=$(id);if(e){e.scrollIntoView({behavior:'smooth',block:'center'});if(e.focus)try{e.focus({preventScroll:true})}catch(x){}}}
+let ISS=[];
+function grp(list,pre){const g=[];list.forEach(x=>{const k=x[0].indexOf(': '),gt=k>0?x[0].slice(0,k):'Geral',tx=k>0?x[0].slice(k+2):x[0];let G=g.find(y=>y.t==gt);if(!G){G={t:gt,i:[]};g.push(G)}G.i.push([cap(tx),x[1]])});
+ return g.map(G=>`<div class="gt">${esc(G.t)}</div>`+G.i.map(i=>`<div class="i" onclick="${pre}goTo('${i[1]}')">${esc(i[0])}</div>`).join('')).join('')}
+function iss(){const a=[],n=v=>parseInt(v)||0,ne=v=>String(v||'').trim()!=='',P=(t,id,st)=>a.push([t,id,st]);
+ if(PV.length)P('Passagem anterior: aplique os itens analisados (botão "Aplicar na passagem")','pvapply',0);
+ if(!D.data)P('Turno: data','data',1);
+ if(!D.turma)P('Turno: selecione a turma','turma',1);
+ if(D.dc==='')P('Diesel: foram recebidas carretas?','dcs',1);else if(D.dc=='sim'&&!n(D.dcq))P('Diesel: quantas carretas?','dcq',1);
+ if(!D.dv||!D.dp)P('Diesel: volume e peso','dv',1);
+ if(!ne(D.hua)||!ne(D.qnzh)||!ne(D.mdc))P('Blocos: informe QNZH, HUA e MDC (0 se não houve)',!ne(D.qnzh)?'qnzh':!ne(D.hua)?'hua':'mdc',2);
+ if(!ne(D.patio))P('Blocos: total no pátio','patio',2);
+ [['env','enviados'],['rec','recebidos']].forEach(([k,nm])=>{const q=D[k+'Q'];
+  if(q==='')P(`Containers ${nm}: foram ${nm} containers?`,'q'+k,2);
+  else if(q=='sim'){let ok=false,bad=false;D[k].forEach(c=>{const e=c.e.trim(),qq=n(c.q);if(e&&qq)ok=true;else if(e){bad=true;P(`Containers ${nm}: quantidade de ${cap(e)}`,'c'+k,2)}else if(qq){bad=true;P(`Containers ${nm}: informe a empresa`,'c'+k,2)}});
+   if(!ok&&!bad)P(`Containers ${nm}: informe empresa e quantidade`,'c'+k,2)}});
+ if(D.sai==='')P('Containers para amanhã: sim ou não?','sai',2);
+ else if(D.sai=='sim'){if(!n(D.saiq))P('Containers para amanhã: quantos?','saiq',2);else if(!D.saisep)P('Containers para amanhã: já estão separados?','sep',2)}
+ if(D.vesQ==='')P('Embarcações: há embarcações a informar?','vq',3);
+ else if(D.vesQ=='sim'){if(!D.ves.length)P('Embarcações: adicione ao menos uma','vq',3);
+  D.ves.forEach(x=>{const nm=(x.n||'Embarcação sem nome')+(x.v?' '+x.v:'');
+   if(!x.n.trim())P(nm+': informe o nome','ves',3);
+   if(x.s=='ratificado'&&!x.pd&&!x.prev)P(nm+': previsão de atracação','ves',3);
+   if(x.s=='atracado'){if(!x.hora)P(nm+': hora de atracação','ves',3);if(!x.bwe)P(nm+': embarque de materiais BWE','ves',3);if(!x.ran)P(nm+': embarque de rancho','ves',3);if(!x.desd&&!x.des)P(nm+': previsão de desatracação','ves',3)}
+   if(x.s=='fechado'&&!x.psp&&!x.sara)P(nm+': fechado em qual (PSP e/ou SARA)?','ves',3);
+   if(x.s=='pendente'){if(!x.dhora)P(nm+': hora de desatracação','ves',3);if(!x.fpsp&&!x.fsara&&!(x.pend||'').trim())P(nm+': o que está pendente?','ves',3)}})}
+ ISS=a;
+ $('iss').innerHTML=a.length?`<h3><span>Falta preencher</span><span class="n">${a.length}</span></h3><div class="il">${grp(a,'')}</div>`:'<div class="ok">✓ Tudo preenchido</div>';
+ const bd=$('badge');bd.textContent=a.length?a.length+' a preencher':'✓ completo';bd.classList.toggle('ok',!a.length);
+ wizUpdate()}
+// assistente por etapas
+const STEPS=[['Anterior','Passagem anterior (opcional)','Cole a passagem do turno anterior para pré-preencher. Se não houver, é só avançar.'],['Turno','Turno e diesel','Data, turma, turno e estoque de diesel.'],['Pátio','Pátio','Blocos recebidos, containers e serviços do pátio.'],['Píer','Píer e embarcações','Serviços do píer e a situação de cada embarcação.'],['Pendências','Pendências e máquinas','Pendências do pátio e do píer e status das máquinas (opcional).'],['Revisão','Revisão','Confira o texto final e copie a passagem.']];
+let WZ=false,cur=0,EL=[];
+const stepIss=i=>ISS.filter(x=>x[2]===i);
+const firstBlocked=up=>{for(let k=0;k<up;k++)if(stepIss(k).length)return k;return -1};
+function wizUpdate(){if(!WZ)return;
+ document.querySelectorAll('#stepper .st1').forEach((b,i)=>{const done=i<cur&&!stepIss(i).length;b.classList.toggle('cur',i==cur);b.classList.toggle('done',done);b.classList.toggle('lock',i>cur&&firstBlocked(i)>=0);b.querySelector('.b').textContent=done?'✓':(i+1)});
+ const si=stepIss(cur),el=$('stepiss');
+ if(cur==5||(!si.length&&(cur==0||cur==4)))el.classList.add('hide');
+ else{el.classList.remove('hide');el.innerHTML=si.length?`<h3><span>Falta preencher nesta etapa</span><span class="n">${si.length}</span></h3><div class="il">${grp(si,'')}</div>`:'<div class="ok">✓ Etapa completa — pode avançar</div>'}
+ $('wback').style.visibility=cur?'visible':'hidden';
+ const nb=$('wnext');nb.classList.toggle('lock',si.length>0&&cur<5);
+ nb.textContent=cur==5?'Copiar passagem':(cur==0&&!PV.length&&!$('prevtxt').value.trim())?'Pular →':si.length?`Avançar (${si.length}) →`:'Avançar →'}
+function showStep(i){cur=i;D.step=i;save();EL.forEach((arr,j)=>arr.forEach(e=>e&&e.classList.toggle('hide',j!==i)));
+ $('steptitle').innerHTML=`<div class="e">Etapa ${i+1} de 6</div><div class="t">${STEPS[i][1]}</div><div class="d">${STEPS[i][2]}</div>`;
+ $('wmsg').textContent='';wizUpdate();window.scrollTo({top:0,behavior:'smooth'})}
+function flash(){const el=$('stepiss');el.classList.remove('hide','shake');void el.offsetWidth;el.classList.add('shake');el.scrollIntoView({behavior:'smooth',block:'center'});$('wmsg').textContent='Preencha os itens pendentes para avançar'}
+function goStep(j){if(j<=cur){showStep(j);return}const fb=firstBlocked(j);if(fb>=0){showStep(fb);flash()}else showStep(j)}
+function initWiz(){
+ const G=document.querySelector('section[data-t="Geral"]'),cs=[...G.querySelectorAll(':scope>.card')],sec=t=>document.querySelector(`section[data-t="${t}"]`);
+ EL=[[cs[0]],[cs[1],cs[2]],[sec('Pátio')],[sec('Píer'),sec('Embarcações')],[sec('Pendências e Máquinas')],[document.querySelector('aside')]];
+ $('stepper').innerHTML=STEPS.map((x,i)=>`<button class="st1" onclick="goStep(${i})"><span class="b">${i+1}</span><span class="l">${x[0]}</span></button>`).join('');
+ $('wback').onclick=()=>{if(cur>0)showStep(cur-1)};
+ $('wnext').onclick=()=>{if(cur==5){copiar();return}if(stepIss(cur).length){flash();return}showStep(cur+1)};
+ $('prevtxt').addEventListener('input',wizUpdate);
+ WZ=true;const st=Math.min(D.step||0,5),fb=firstBlocked(st);showStep(fb>=0?fb:st)}
+$('nx').onclick=()=>{if(confirm('Guardar esta passagem como base e começar o próximo turno?')){try{localStorage.setItem('ps_next',$('out').textContent)}catch(e){}D=blank();save();location.reload()}};
+$('wa').onclick=()=>{const go=()=>window.open('https://wa.me/?text='+encodeURIComponent($('out').textContent),'_blank');if(ISS.length)avisar(go);else go()};
+$('rs').onclick=()=>{if(confirm('Limpar todos os campos?')){D=blank();save();location.reload()}};
+$('patio').addEventListener('input',()=>{D.patioManual=true});
+document.addEventListener('click',e=>{const t=e.target;if(t.matches&&t.matches('input[type=date],input[type=time],input[type=datetime-local]')){try{t.showPicker()}catch(x){}}});
+setTurno(D.turno,false);rc();rm();rv();rs();rd();
+try{const nx=localStorage.getItem('ps_next');if(nx){localStorage.removeItem('ps_next');$('prevtxt').value=nx;analisar()}}catch(e){}
+rq();vqUpdate();initWiz();
+</script></body></html>
