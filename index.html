@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#060d14">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Passagem"><meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='6' y='6' width='88' height='88' rx='20' fill='%230b3a50'/><polygon points='16,58 84,58 75,75 27,75' fill='%235fd3f0'/><rect x='25' y='46' width='9' height='12' fill='%23f2b632'/><rect x='35' y='46' width='9' height='12' fill='%23ef5b5b'/><rect x='45' y='46' width='9' height='12' fill='%232ecc8f'/><rect x='30' y='36' width='9' height='10' fill='%232ecc8f'/><rect x='40' y='36' width='9' height='10' fill='%23f2b632'/><rect x='60' y='34' width='15' height='24' fill='%23e8f0f6'/><rect x='62' y='27' width='11' height='7' fill='%23e8f0f6'/><rect x='64' y='38' width='4' height='4' fill='%230b3a50'/><rect x='70' y='38' width='4' height='4' fill='%230b3a50'/><rect x='17' y='80' width='66' height='3' fill='%2322b8e0'/><rect x='26' y='86' width='48' height='2.5' fill='%2322b8e0'/></svg>">
 <title>Passagem de Serviço</title>
 <style>
 :root{--bg:#060d14;--bg2:#0a1620;--card:#0e1b27;--card2:#122333;--ink:#e8f0f6;--mut:#7f95a7;--line:#1b2f40;--pri:#22b8e0;--pri2:#5fd3f0;--ok:#2ecc8f;--warn:#f2b632;--bad:#ef5b5b;--shadow:0 10px 30px rgba(0,0,0,.45);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -108,7 +112,9 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 pre{white-space:pre-wrap;word-break:break-word;font:13px/1.6 ui-monospace,Consolas,monospace;background:#050b11;color:#cfe3ef;border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 12px;max-height:62vh;overflow:auto}
 .btns{display:flex;gap:8px}.btn{flex:1;border:0;border-radius:11px;padding:13px;font-weight:800;cursor:pointer;font-size:14px;background:linear-gradient(120deg,#0e7fa0,var(--pri));color:#03121a;transition:transform .1s}.btn:active{transform:scale(.98)}
 .btn.sec{background:#0b1823;color:var(--ink);border:1px solid var(--line)}
+#toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#0e6785;color:#fff;padding:10px 18px;border-radius:99px;font-weight:700;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}#toast.on{opacity:1}#toast.err{background:#9a3a3a}
 </style></head><body>
+<div id="toast"></div>
 <header><h1>⚓ PASSAGEM DE SERVIÇO</h1><p>Preencha os campos — o texto padronizado é gerado automaticamente</p></header>
 <nav id="stepper"></nav>
 <div class="wrap">
@@ -120,6 +126,7 @@ pre{white-space:pre-wrap;word-break:break-word;font:13px/1.6 ui-monospace,Consol
 <label>Cole aqui a última passagem gerada</label>
 <textarea id="prevtxt" rows="5" placeholder="Cole a passagem do turno anterior (ou use o botão abaixo)"></textarea>
 <div class="btns" style="margin-top:10px"><button class="btn sec" onclick="pasteClip()">📋 Colar da área de transferência</button><button class="btn" onclick="analisar()">Analisar</button></div>
+<div id="histbox" class="hide" style="margin-top:12px"><label>Ou use uma passagem salva neste aparelho</label><div style="display:grid;grid-template-columns:1fr auto;gap:10px"><select id="histsel"></select><button class="btn sec" style="min-width:90px" onclick="usarHist()">Usar</button></div></div>
 <div id="pvinfo" class="hint hide" style="margin-top:12px"></div>
 <div id="pvlist" style="margin-top:8px"></div>
 <button class="btn hide" id="pvapply" style="margin-top:6px;width:100%" onclick="aplicarPV()">Aplicar na passagem</button></div>
@@ -137,7 +144,6 @@ pre{white-space:pre-wrap;word-break:break-word;font:13px/1.6 ui-monospace,Consol
 <div class="g2" style="margin-top:12px"><div><label>Volume (m³)</label><input id="dv" placeholder="254,919"></div><div><label>Peso (ton)</label><input id="dp" placeholder="212,697"></div></div></div>
 </section>
 
-<datalist id="empresas"><option value="Textil Nahas"><option value="Eurotextil"><option value="VCI"><option value="Alliance"><option value="Timbro"><option value="Comexport"><option value="Portmac"><option value="Allure"></datalist>
 <section data-t="Pátio">
 <div class="card"><h3>Blocos de granito recebidos</h3>
 <div class="g3"><div><label>Quanzhou</label><input type="number" min="0" id="qnzh" placeholder="0"></div><div><label>Hualien</label><input type="number" min="0" id="hua" placeholder="0"></div><div><label>MDC</label><input type="number" min="0" id="mdc" placeholder="0"></div></div>
@@ -173,8 +179,8 @@ pre{white-space:pre-wrap;word-break:break-word;font:13px/1.6 ui-monospace,Consol
 </section>
 </main>
 
-<aside class="prev"><div class="card iss" id="iss"></div><div class="card"><h3>Texto gerado</h3><pre id="out"></pre>
-<div class="btns"><button class="btn" id="cp">Copiar texto</button><button class="btn sec" id="wa">WhatsApp</button></div>
+<aside class="prev"><div class="card iss" id="iss"></div><div class="card"><h3>Texto gerado</h3><pre id="out"></pre><div id="omit" class="hintsm hide" style="margin:-4px 0 12px;color:#ff9a5c"></div>
+<div class="btns"><button class="btn" id="cp">Copiar texto</button><button class="btn sec" id="wa">WhatsApp</button><button class="btn sec hide" id="sh">Compartilhar</button></div>
 <div class="btns" style="margin-top:8px"><button class="btn sec" id="nx">Iniciar próximo turno</button><button class="btn sec" id="rs">Limpar tudo</button></div></div></aside>
 </div>
 <div class="modal hide" id="warn"><div class="mbox"><h3 style="color:#ff9a5c">Faltam informações (<span id="wn"></span>)</h3><p class="hintsm" style="margin:0 0 8px">Confira antes de enviar a passagem:</p><div id="wl" class="iss"></div><div class="btns" style="margin-top:14px"><button class="btn sec" id="wb">Voltar e preencher</button><button class="btn" id="wc">Copiar mesmo assim</button></div></div></div>
@@ -187,17 +193,37 @@ const cap=t=>{t=String(t||'').trim();return t.charAt(0).toUpperCase()+t.slice(1)
 const dTxt=(d,h,leg)=>{if(!d&&leg){[d,h]=String(leg).split('T')}if(!d)return'';const[y,m,dd]=d.split('-');return `${dd}/${m}${h?' às '+h+'h':''}`};
 const C1=el=>{const v=el.value;if(v&&v[0]!==v[0].toUpperCase()){const p=el.selectionStart;el.value=v[0].toUpperCase()+v.slice(1);try{el.setSelectionRange(p,p)}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const blank=()=>({data:new Date().toISOString().slice(0,10),turma:'',envQ:'',recQ:'',vesQ:'',step:0,turno:'diurno',hi:'07:00',hf:'19:00',dv:'',dp:'',hua:'',qnzh:'',mdc:'',patio:'',sai:'',saiq:'',saisep:'',dc:'',dcq:'',dvp:null,dpp:null,patioPrev:null,patioManual:false,
+const todayLocal=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const blankV=()=>({n:'',v:'',s:'ratificado',prev:'',hora:'',bwe:'',ran:'',des:'',pd:'',ph:'',desd:'',desh:'',dhora:'',pend:'',psp:false,sara:false,fpsp:false,fsara:false});
+const blank=()=>({data:todayLocal(),turma:'',envQ:'',recQ:'',vesQ:'',step:0,turno:'diurno',hi:'07:00',hf:'19:00',dv:'',dp:'',hua:'',qnzh:'',mdc:'',patio:'',sai:'',saiq:'',saisep:'',dc:'',dcq:'',dvp:null,dpp:null,patioPrev:null,patioManual:false,
  env:[{e:'',q:''}],rec:[{e:'',q:''}],pat:'',pier:'',ppat:'',ppier:'',ves:[],maq:[{n:'EP 45-1',s:'operando'},{n:'EP 45-2',s:'operando'},{n:'EP 30-1',s:'operando'}]});
-let D=blank();try{const s=localStorage.getItem('ps');if(s)D=Object.assign(blank(),JSON.parse(s))}catch(e){}
+const SK='passagem:estado',NK='passagem:proxima',SV=2;
+function normalize(o){const b=blank();if(!o||typeof o!=='object'||Array.isArray(o))return b;const d=Object.assign(b,o);d.sv=SV;
+ ['env','rec'].forEach(k=>{if(!Array.isArray(d[k])||!d[k].length)d[k]=blank()[k];d[k]=d[k].filter(c=>c&&typeof c==='object').map(c=>Object.assign(c,{e:String(c.e==null?'':c.e),q:c.q==null?'':c.q}))});
+ d.ves=(Array.isArray(d.ves)?d.ves:[]).filter(x=>x&&typeof x==='object').map(x=>{const t=blankV();Object.keys(t).forEach(k=>{if(x[k]==null)x[k]=t[k]});return x});
+ ['pat','pier','ppat','ppier'].forEach(k=>{d[k]=Array.isArray(d[k])?d[k].join('\n'):String(d[k]==null?'':d[k])});
+ return d}
+let D;try{const s0=localStorage.getItem(SK)||localStorage.getItem('ps');D=normalize(s0?JSON.parse(s0):null)}catch(e){D=blank()}
 const mk=n=>String(n||'').toLowerCase().replace(/empilhadeira|\s+/g,'');
 if(!Array.isArray(D.maq))D.maq=[];D.maq.forEach(x=>{x.n=String(x.n||'').replace(/^empilhadeira\s+/i,'')});
 {const seen=new Set(),out=[];blank().maq.forEach(m=>{const f=D.maq.find(x=>mk(x.n)==mk(m.n));out.push(f?{n:m.n,s:f.s||'operando'}:m);seen.add(mk(m.n))});
 D.maq.forEach(x=>{const k=mk(x.n);if(k&&!seen.has(k)){seen.add(k);out.push(x)}});D.maq=out}
-const save=()=>{try{localStorage.setItem('ps',JSON.stringify(D))}catch(e){}};
+const save=()=>{try{localStorage.setItem(SK,JSON.stringify(D))}catch(e){}};
 document.querySelectorAll('section').forEach(sec=>{const h=document.createElement('h2');h.textContent=sec.dataset.t;sec.prepend(h)});
 // campos simples
-['data','turma','hi','hf','dv','dp','hua','qnzh','mdc','patio'].forEach(k=>{const el=$(k);el.value=D[k];el.oninput=()=>{D[k]=el.value;gen()}});
+function toast(m,ok){const t=$('toast');t.textContent=m;t.className='on'+(ok===false?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>{t.className=''},2400)}
+function showOmit(a){const e=$('omit');e.classList.toggle('hide',!a.length);e.textContent=a.length?'⚠ '+a.length+' linha(s) fora do texto por citar embarcação já cadastrada (ela sai pelo cartão): '+a.map(x=>x.replace(/^\*/,'')).join(' | '):''}
+const HK='passagem:hist';
+const hist=()=>{try{const h=JSON.parse(localStorage.getItem(HK)||'[]');return Array.isArray(h)?h:[]}catch(e){return[]}};
+function saveHist(t){try{const h=hist();if(h[0]&&h[0].t===t)return;h.unshift({t,ts:Date.now()});localStorage.setItem(HK,JSON.stringify(h.slice(0,10)));renderHist()}catch(e){}}
+function renderHist(){const h=hist(),s=$('histsel');if(!s)return;$('histbox').classList.toggle('hide',!h.length);s.innerHTML=h.map((x,i)=>{const L=String(x.t).split('\n');return '<option value="'+i+'">'+esc((L[1]||'').replace(/\.$/,'')+' · '+(L[2]||'').replace(/\.$/,''))+'</option>'}).join('')}
+function usarHist(){const x=hist()[$('histsel').value];if(!x)return;$('prevtxt').value=x.t;analisar()}
+let bootErr=false;function bootFail(e){console.error(e);if(bootErr)return;bootErr=true;if(confirm('Não foi possível carregar os dados salvos. Limpar e recomeçar?')){try{localStorage.removeItem(SK)}catch(x){}location.reload()}}
+function learnEmp(){let ch=false;['env','rec'].forEach(k=>D[k].forEach(c=>{const e=c.e.trim();if(e.length>=3&&(parseInt(c.q)||0)>0&&!EMP.some(x=>x.toLowerCase()==e.toLowerCase())){EMP.push(cap(e));ch=true}}));if(ch)try{localStorage.setItem('passagem:empresas',JSON.stringify(EMP.slice(8).slice(-30)))}catch(e){}}
+let rcT;function rcSoon(){clearTimeout(rcT);rcT=setTimeout(()=>{learnEmp();const a=document.activeElement;if(a&&a.closest&&a.closest('#cenv,#crec')&&a.tagName!=='BUTTON'&&a.tagName!=='SELECT')return;rc()},250)}
+function initExtras(){['qnzh','hua','mdc','patio','dcq','saiq'].forEach(id=>$(id).setAttribute('inputmode','numeric'));['dv','dp'].forEach(id=>$(id).setAttribute('inputmode','decimal'));
+ renderHist();const sh=$('sh');if(navigator.share){sh.classList.remove('hide');sh.onclick=()=>{const go=()=>navigator.share({text:$('out').textContent}).catch(()=>{});if(ISS.length)avisar(go);else go()}}}
+['data','turma','hi','hf','dv','dp','hua','qnzh','mdc','patio'].forEach(k=>{const el=$(k);el.value=D[k];el.oninput=()=>{D[k]=el.value;if(k=='patio')D.patioManual=true;gen()}});
 function setTurno(t,reset){D.turno=t;if(reset){D.hi=t=='diurno'?'07:00':'19:00';D.hf=t=='diurno'?'19:00':'07:00';$('hi').value=D.hi;$('hf').value=D.hf}
  [...$('turno').children].forEach(b=>b.classList.toggle('on',b.dataset.v==t));gen()}
 [...$('turno').children].forEach(b=>b.onclick=()=>setTurno(b.dataset.v,true));
@@ -207,13 +233,14 @@ function setTurno(t,reset){D.turno=t;if(reset){D.hi=t=='diurno'?'07:00':'19:00';
 function addC(k){rc();const r=$('c'+k).querySelectorAll('.row'),l=r[r.length-1];if(l)l.querySelector('input').focus()}
 function stp(k,i,d){D[k][i].q=Math.max(0,(parseInt(D[k][i].q)||0)+d);rc()}
 const EMP=['VCI','Eurotextil','Textil Nahas','Alliance','Timbro','Comexport','Portmac','Allure'];
+try{JSON.parse(localStorage.getItem('passagem:empresas')||'[]').forEach(n=>{if(!EMP.includes(n))EMP.push(n)})}catch(e){}
 function setE(k,i,v){const c=D[k][i];if(v=='__o'){c.o=true;c.e=''}else{c.o=false;c.e=v}rc()}
 function setT(i,v){D.rec[i].t=v;rc()}
 function rc(){['env','rec'].forEach(k=>{const l=D[k][D[k].length-1];if(!l||l.e.trim()||String(l.q).trim())D[k].push({e:'',q:'',t:'dtc',lib:'nao',proc:'Santos/SP'});
  $('c'+k).innerHTML=D[k].map((c,i)=>{const oth=c.o||(c.e&&!EMP.includes(c.e)),t=c.t||'dtc';
   return `<div class="crow"><div class="r1"><select onchange="setE('${k}',${i},this.value)"><option value="">Empresa…</option>${EMP.map(o=>`<option ${c.e==o?'selected':''}>${o}</option>`).join('')}<option value="__o" ${oth?'selected':''}>Outra…</option></select>
-${oth?`<input value="${esc(c.e)}" placeholder="Nome" autocapitalize="words" oninput="C1(this);D.${k}[${i}].e=this.value;gen()" onchange="rc()">`:''}
-<div class="stp"><button onclick="stp('${k}',${i},-1)" aria-label="menos">−</button><input type="number" min="0" value="${esc(c.q)}" placeholder="0" oninput="D.${k}[${i}].q=this.value;gen()" onchange="rc()"><button onclick="stp('${k}',${i},1)" aria-label="mais">+</button></div>
+${oth?`<input value="${esc(c.e)}" placeholder="Nome" autocapitalize="words" oninput="C1(this);D.${k}[${i}].e=this.value;gen()" onchange="rcSoon()">`:''}
+<div class="stp"><button onclick="stp('${k}',${i},-1)" aria-label="menos">−</button><input type="number" inputmode="numeric" min="0" value="${esc(c.q)}" placeholder="0" oninput="D.${k}[${i}].q=this.value;gen()" onchange="rcSoon()"><button onclick="stp('${k}',${i},1)" aria-label="mais">+</button></div>
 <button class="x" onclick="D.${k}.splice(${i},1);rc()" title="Remover">×</button></div>
 ${k=='rec'?`<div class="sn" style="max-width:220px"><button class="m ${t=='dtc'?'on':''}" onclick="setT(${i},'dtc')">DTC</button><button class="m ${t=='dta'?'on':''}" onclick="setT(${i},'dta')">DTA</button></div>
 ${t=='dta'?`<div class="g2" style="margin-top:10px"><div><label>Liberado pelo fiscal?</label><div class="sn"><button class="s ${c.lib=='sim'?'on':''}" onclick="D.rec[${i}].lib='sim';rc()">Sim</button><button class="n ${c.lib!='sim'?'on':''}" onclick="D.rec[${i}].lib='nao';rc()">Não</button></div></div><div><label>Procedência</label><input value="${esc(c.proc==null?'Santos/SP':c.proc)}" oninput="D.rec[${i}].proc=this.value;gen()"></div></div>`:''}`:''}</div>`}).join('')});gen()}
@@ -223,7 +250,7 @@ const MS=[['operando','Operando',''],['parada','Parada','parada'],['em manutenç
 function rm(){$('maq').innerHTML=D.maq.map((m,i)=>`<div class="mq"><span class="dot ${(MS.find(o=>o[0]==m.s)||MS[0])[2]}"></span><input value="${esc(m.n)}" placeholder="Máquina" oninput="D.maq[${i}].n=this.value;gen()"><div class="sn">${MS.map(o=>`<button class="${m.s==o[0]?'on s':''}" onclick="D.maq[${i}].s='${o[0]}';rm()">${o[1]}</button>`).join('')}</div><button class="x" onclick="D.maq.splice(${i},1);rm()">×</button></div>`).join('');gen()}
 // embarcações
 const ST=[['ratificado','🟡','Ratificado'],['atracado','⚓','Atracado'],['pendente','📝','Pendente'],['fechado','✅','Fechado']];
-function addV(){D.vesQ='sim';D.ves.push({n:'',v:'',s:'ratificado',prev:'',hora:'',bwe:'',ran:'',des:'',pd:'',ph:'',desd:'',desh:'',dhora:'',pend:'',psp:false,sara:false,fpsp:false,fsara:false});rv()}
+function addV(){D.vesQ='sim';D.ves.push(blankV());rv()}
 const sn=(i,f,v)=>`<div class="sn"><button class="s ${v==='sim'?'on':''}" onclick="D.ves[${i}].${f}='sim';rv()">Sim</button><button class="n ${v==='nao'?'on':''}" onclick="D.ves[${i}].${f}='nao';rv()">Não</button></div>`;
 function vqUpdate(){[...$('vq').children].forEach(b=>b.classList.toggle('on',(b.classList.contains('s')?'sim':'nao')==D.vesQ));$('vbox').classList.toggle('hide',D.vesQ!=='sim')}
 function setV(v){if(v=='nao'&&D.ves.length&&!confirm('Remover as embarcações já lançadas?'))return;D.vesQ=v;if(v=='nao')D.ves=[];if(v=='sim'&&!D.ves.length)addV();else rv()}
@@ -251,7 +278,8 @@ function parseVes(t){
  const m=t.match(/^\W*(.+?)[,\s]+viagem\s*(?:n[º°o.]*\s*)?([\w\-\/]+)/i);if(!m)return null;
  const v={n:cap(clean(m[1]).replace(/^(navio|embarca[çc][ãa]o)\s+/i,'')),v:m[2].replace(/[,;.]+$/,''),s:'',prev:'',prevTxt:'',hora:'',bwe:'',ran:'',des:'',pd:'',ph:'',desd:'',desh:'',dhora:'',pend:'',psp:false,sara:false,fpsp:false,fsara:false};
  const yr=(D.data||'').slice(0,4)||String(new Date().getFullYear());
- const dt=re=>{const x=t.match(re);if(!x)return null;const y=x[3]?(x[3].length==2?'20'+x[3]:x[3]):yr;const h=x[4]?`${p2(x[4])}:${x[5]||'00'}`:'';
+ const yrFor=mo=>{const cm=parseInt((D.data||'').slice(5,7))||0,m=parseInt(mo)||0,Y=parseInt(yr);return String(cm>=11&&m<=2?Y+1:cm<=2&&m>=11?Y-1:Y)};
+ const dt=re=>{const x=t.match(re);if(!x)return null;const y=x[3]?(x[3].length==2?'20'+x[3]:x[3]):yrFor(x[2]);const h=x[4]?`${p2(x[4])}:${x[5]||'00'}`:'';
   return{d:`${y}-${p2(x[2])}-${p2(x[1])}`,h,txt:`${p2(x[1])}/${p2(x[2])}${h?' às '+h+'h':''}`}};
  const tail='(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?(?:[^0-9]{0,12}(\\d{1,2})\\s*[:h]\\s*(\\d{2})?)?';
  const pv=dt(new RegExp('previs[ãa]o(?!\\s+de\\s+desatrac)[^0-9]{0,30}'+tail,'i'));if(pv){v.prevTxt=pv.txt;v.pd=pv.d;v.ph=pv.h}
@@ -322,7 +350,6 @@ function analisar(){
  renderPV();gen()}
 const SL={ratificado:'Ratificado',atracado:'Atracado',pendente:'Pendente (desatracado)',fechado:'Fechado'};
 const chp=(l,c)=>`<span class="chp ${c||''}">${esc(l)}</span>`;
-const fdh=s=>{if(!s)return'';const[d,t]=s.split('T');return`${d.split('-').reverse().slice(0,2).join('/')} às ${t}h`};
 function renderPV(){
  const OL={manter:['Manter','m'],concluido:['Concluído','s'],ignorar:['Ignorar','n']};
  const btn=(i,x,o)=>`<button class="${OL[o][1]} ${x.a==o?'on':''}" onclick="PV[${i}].a='${o}';renderPV()">${OL[o][0]}</button>`;
@@ -364,12 +391,14 @@ $('saiq').oninput=()=>{D.saiq=$('saiq').value;gen()};
 // texto
 const p2=n=>String(n).padStart(2,'0');
 const fd=d=>d?d.split('-').reverse().join('/'):'__/__/____';
-const fp=s=>{if(!s)return'data a definir';const[d,t]=s.split('T');const[y,m,dd]=d.split('-');return `${dd}/${m} às ${t}h`};
 function gen(){save();
- const n=v=>parseInt(v)||0,tot=n(D.hua)+n(D.qnzh)+n(D.mdc);$('tot').textContent=tot;if(D.patioPrev!=null&&!D.patioManual){D.patio=String(D.patioPrev+tot);const pe=$('patio');if(pe&&pe.value!==D.patio)pe.value=D.patio}
+ const tot=(parseInt(D.hua)||0)+(parseInt(D.qnzh)||0)+(parseInt(D.mdc)||0);$('tot').textContent=tot;if(D.patioPrev!=null&&!D.patioManual){D.patio=String(D.patioPrev+tot);const pe=$('patio');if(pe&&pe.value!==D.patio)pe.value=D.patio}
+ const r=buildText(D);$('out').textContent=r.text;showOmit(r.omitted);iss()}
+// função pura (sem DOM): recebe o estado e devolve o texto da passagem
+function buildText(D){const n=v=>parseInt(v)||0,tot=n(D.hua)+n(D.qnzh)+n(D.mdc),OM=new Set();
  const L=[];const cap=t=>{t=String(t||'').trim();return t.charAt(0).toUpperCase()+t.slice(1)};
  const VN=D.ves.filter(x=>(x.n||'').trim().length>2).map(x=>[nz(x.n),nz(x.v||'')]);
- const B=a=>String(a||'').split('\n').map(s=>s.trim().replace(/^[*\-•]\s*/,'')).filter(Boolean).map(s=>'*'+cap(s)).filter(l=>!VN.some(([a1,v1])=>nz(l).includes(a1)&&(!v1||nz(l).includes(v1))));
+ const B=a=>String(a||'').split('\n').map(s=>s.trim().replace(/^[*\-•]\s*/,'')).filter(Boolean).map(s=>'*'+cap(s)).filter(l=>{const hit=VN.some(([a1,v1])=>nz(l).includes(a1)&&(!v1||nz(l).includes(v1)));if(hit)OM.add(l);return !hit});
  L.push('*PASSAGEM DE SERVIÇO*',`${fd(D.data)} ${D.hi}h às ${D.hf}h.`,`Turma ${D.turma}.`,'','*SERVIÇOS:*','*PÁTIO.*');
  const nm=c=>cap(c.e),jn=a=>a.length>1?a.slice(0,-1).join(', ')+' e '+a[a.length-1]:a[0];
  const ENV=D.envQ=='sim'?D.env:[],REC=D.recQ=='sim'?D.rec:[];
@@ -402,10 +431,12 @@ function gen(){save();
  if(L.length==pidx)L.push('*Sem pendências.');
  const mq=D.maq.filter(m=>m.n.trim());if(mq.length){L.push('','*MÁQUINAS:*',...mq.map(m=>`-${/^ep\s*\d/i.test(m.n.trim())?'Empilhadeira '+m.n.trim().toUpperCase():cap(m.n)} ${m.s};`))}
  const seen=new Set(),O=L.filter(l=>{if(!(l.startsWith('*')&&!l.endsWith('*'))||/^\*sem pend/i.test(l))return true;const k=nz(l);if(seen.has(k))return false;seen.add(k);return true});
- $('out').textContent=O.join('\n');iss()}
+ return{text:O.join('\n'),omitted:[...OM]}}
 async function copiar(force){if(ISS.length&&force!==true){avisar(()=>copiar(true));return}
- const t=$('out').textContent;try{await navigator.clipboard.writeText(t)}catch(e){const r=document.createRange();r.selectNode($('out'));getSelection().removeAllRanges();getSelection().addRange(r);document.execCommand('copy')}
- [['cp','Copiar texto'],['cp2','Copiar passagem']].forEach(([id,l])=>{const b=$(id);b.textContent='Copiado ✓';setTimeout(()=>b.textContent=l,1500)})}
+ const t=$('out').textContent;let ok=false;
+ try{await navigator.clipboard.writeText(t);ok=true}catch(e){const ta=document.createElement('textarea');ta.value=t;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);try{ok=document.execCommand('copy')}catch(x){}ta.remove()}
+ if(ok){saveHist(t);toast('Passagem copiada ✓');[['cp','Copiar texto'],['cp2','Copiar passagem']].forEach(([id,l])=>{const b=$(id);b.textContent='Copiado ✓';setTimeout(()=>b.textContent=l,1500)})}
+ else toast('Não consegui copiar. Use Compartilhar ou selecione o texto.',false)}
 let WCB=null;
 function avisar(cb){WCB=cb;$('wl').innerHTML=grp(ISS,'closeW();');$('wn').textContent=ISS.length;$('warn').classList.remove('hide')}
 function closeW(){$('warn').classList.add('hide')}
@@ -467,12 +498,12 @@ function initWiz(){
  $('wnext').onclick=()=>{if(cur==5){copiar();return}if(stepIss(cur).length){flash();return}showStep(cur+1)};
  $('prevtxt').addEventListener('input',wizUpdate);
  WZ=true;const st=Math.min(D.step||0,5),fb=firstBlocked(st);showStep(fb>=0?fb:st)}
-$('nx').onclick=()=>{if(confirm('Guardar esta passagem como base e começar o próximo turno?')){try{localStorage.setItem('ps_next',$('out').textContent)}catch(e){}D=blank();save();location.reload()}};
+$('nx').onclick=()=>{if(confirm('Guardar esta passagem como base e começar o próximo turno?')){saveHist($('out').textContent);try{localStorage.setItem(NK,$('out').textContent)}catch(e){}D=blank();save();location.reload()}};
 $('wa').onclick=()=>{const go=()=>window.open('https://wa.me/?text='+encodeURIComponent($('out').textContent),'_blank');if(ISS.length)avisar(go);else go()};
 $('rs').onclick=()=>{if(confirm('Limpar todos os campos?')){D=blank();save();location.reload()}};
-$('patio').addEventListener('input',()=>{D.patioManual=true});
 document.addEventListener('click',e=>{const t=e.target;if(t.matches&&t.matches('input[type=date],input[type=time],input[type=datetime-local]')){try{t.showPicker()}catch(x){}}});
-setTurno(D.turno,false);rc();rm();rv();rs();rd();
-try{const nx=localStorage.getItem('ps_next');if(nx){localStorage.removeItem('ps_next');$('prevtxt').value=nx;analisar()}}catch(e){}
-rq();vqUpdate();initWiz();
+try{setTurno(D.turno,false);rc();rm();rv();rs();rd()}catch(e){bootFail(e)}
+try{const nx=localStorage.getItem(NK);if(nx){localStorage.removeItem(NK);$('prevtxt').value=nx;analisar()}}catch(e){}
+try{rq();vqUpdate();initWiz();initExtras()}catch(e){bootFail(e)}
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script></body></html>
